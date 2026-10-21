@@ -504,6 +504,10 @@ document.addEventListener("click", e => {
     $("#tab-all").setAttribute("aria-pressed", !free); $("#tab-free").setAttribute("aria-pressed", free);
     document.querySelectorAll(".post").forEach(p => p.style.display = (!free || p.hasAttribute("data-free")) ? "" : "none");
     document.querySelectorAll("[data-sec]").forEach(d => d.style.display = free ? "none" : "");
+    // v ukázkách místo sekcí jedna linka nahoře, ať první karta nenaráží na záložky
+    $("[data-free-sec]")?.remove();
+    const k = previewIds.length;
+    if (free) feed.insertAdjacentHTML("afterbegin", divider("Ukázky", `${k} ${k === 1 ? "ukázka" : k < 5 ? "ukázky" : "ukázek"}`).replace("data-sec", "data-free-sec"));
   }
 });
 document.addEventListener("keydown", e => { if (e.key === "Escape") modal.classList.remove("on"); });
