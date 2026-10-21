@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Koukni do mailu · Škola matiky</title>
+<!-- Děkovací stránka po zaplacení: světlá J (papír a inkoust), aby navazovala na komunitu na Flixy, která je světlá.
+     Stejná mřížka jako navrhy/design-j.css: čtvereček = výška řádku (28 px, na telefonu 24 px), každý blok začíná na
+     lince a má výšku v celých čtverečcích, text se posouvá tak, aby účaří leželo na vodorovné lince. ?shot=1 schová pruh „Návrh“. -->
+<style>
+@font-face { font-family: "Raleway"; src: url("fonts/raleway-latin-ext-wght-normal.woff2") format("woff2"); font-weight: 100 900;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Raleway"; src: url("fonts/raleway-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Space Grotesk"; src: url("fonts/spacegrotesk-wght.ttf") format("truetype"); font-weight: 300 700; }
+
+:root {
+  --paper: #fbfaf6; --gridc: rgba(42, 79, 198, .11); --text: #111318; --muted: #555b69; --accent: #2a4fc6;
+  --board: #0d0e11; --bgridc: rgba(255, 255, 255, .085); --board-text: #fff; --board-soft: #d9dbe1; --red: #e5262b;
+  --g: 28px; --cw: round(down, min(100vw - 32px, 728px), 28px);
+  --k-r: .353; --k-sg: .345; --k: var(--k-r); --lh: var(--g);
+  --grid: linear-gradient(var(--gridc) 1px, transparent 1px), linear-gradient(90deg, var(--gridc) 1px, transparent 1px);
+  --bgrid: linear-gradient(var(--bgridc) 1px, transparent 1px), linear-gradient(90deg, var(--bgridc) 1px, transparent 1px);
+}
+@media (max-width: 520px) { :root { --g: 24px; --cw: round(down, 100vw - 28px, 24px); } }
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; min-height: 100vh; background-color: var(--paper); background-image: var(--grid); background-size: var(--g) var(--g);
+  background-position: calc(50% - var(--cw) / 2 + var(--g) / 2) 0;
+  color: var(--text); font: 500 17px/var(--g) "Raleway", system-ui, sans-serif; font-variant-numeric: lining-nums; }
+h1, h2, p, ol { margin: 0; padding: 0; }
+
+/* jeden posun pro všechen text: účaří na vodorovné lince */
+.t { position: relative; top: calc(var(--base, var(--lh)) - var(--lh) / 2 - var(--k) * 1em); line-height: var(--lh); }
+.sg { font-family: "Space Grotesk", sans-serif; --k: var(--k-sg); }
+
+.draft { line-height: var(--g); padding: 0 16px; text-align: center; font-size: 13px; background: #fff6cf; color: #5c4600; }
+[data-shot] .draft { display: none; }
+
+/* horní lišta: prázdný okraj sešitu bez mřížky, výška dvou čtverečků */
+.top { background: var(--paper); box-shadow: 0 1px 0 #d6dbe6; }
+.top-in { max-width: var(--cw); margin: 0 auto; height: calc(2 * var(--g)); display: flex; align-items: center; gap: 12px; }
+.top-in img { width: 32px; height: 32px; border-radius: 50%; }
+.top-in strong { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: 16px; }
+
+main { max-width: var(--cw); margin: 0 auto; padding: calc(2 * var(--g)) 0 calc(3 * var(--g)); }
+h1 { --lh: calc(2 * var(--g)); font-size: 44px; font-weight: 700; letter-spacing: -.02em; }
+@media (max-width: 520px) { h1 { font-size: 36px; } }
+.lead { margin-top: var(--g); font-size: 18px; }
+.lead b { color: var(--accent); font-weight: 700; }
+
+/* kroky: čísla inkoustem na okraji, jako v sešitě */
+ol { list-style: none; margin-top: var(--g); counter-reset: krok; }
+ol li { position: relative; padding-left: calc(2 * var(--g)); counter-increment: krok; }
+ol li::before { content: counter(krok) "."; position: absolute; left: 0; width: calc(1.5 * var(--g));
+  font-family: "Space Grotesk", sans-serif; font-weight: 700; color: var(--accent); }
+.note { margin-top: var(--g); color: var(--muted); font-size: 15px; }
+
+/* živý čtvrtek: jediná tmavá tabule se stejnou mřížkou */
+.board { margin-top: calc(2 * var(--g)); padding: var(--g); background-color: var(--board); background-image: var(--bgrid);
+  background-size: var(--g) var(--g); color: var(--board-text); }
+.board h2 { font-size: 24px; font-weight: 700; }
+.board h2::before { content: ""; display: inline-block; width: 10px; height: 10px; margin-right: 10px; border-radius: 50%;
+  background: var(--red); vertical-align: .12em; }
+@media (max-width: 520px) { .board h2 { font-size: 20px; } }
+.board p { color: var(--board-soft); }
+
+.sign { margin-top: calc(2 * var(--g)); }
+.sign .name { font-family: "Space Grotesk", sans-serif; --k: var(--k-sg); font-weight: 700; font-size: 20px; }
+</style>
+<script>if (new URLSearchParams(location.search).has("shot")) document.documentElement.dataset.shot = "1";</script>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in"><img src="media/avatar.jpg" alt=""><strong>Škola matiky</strong></div>
+</header>
+
+<main>
+  <h1 class="t sg">Koukni do mailu</h1>
+  <p class="lead t">Právě ti přišel mail <b>„Vítej ve škole matiky! Mrkni, kde začít“</b>. Je v něm odkaz do komunity.</p>
+
+  <ol>
+    <li class="t">Otevři mail a klikni na odkaz do komunity.</li>
+    <li class="t">Uvnitř začni klidně úvodními lekcemi, ať máš pevnou startovní čáru. Najdeš je v 👉 ZAČNI ZDE.</li>
+    <li class="t">Záznamy celé letní školy tam na tebe čekají hned, od základů po variační počet.</li>
+  </ol>
+
+  <p class="note t">Mail nikde? Mrkni do spamu nebo do Hromadné pošty, občas tam zapadne.</p>
+
+  <section class="board">
+    <h2 class="t sg">Živě každý čtvrtek od 19:30</h2>
+    <p class="t">Ze všeho je záznam, takže o nic nepřijdeš. Odkaz na hovor je vždy v komunitě.</p>
+  </section>
+
+  <div class="sign">
+    <p class="t">Těším se na tebe!</p>
+    <p class="t name">Vojta</p>
+  </div>
+</main>
+</body>
+</html>
