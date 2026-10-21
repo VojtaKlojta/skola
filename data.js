@@ -41,11 +41,12 @@ const LESSONS = {
   "15": { date: "26. 8.", title: "Brachistochrona", min: 58, topics: "Po jaké křivce sjedeš nejrychleji" },
   "16": { date: "27. 8.", title: "Lagrangeovy multiplikátory", min: 80, topics: "Extrémy s podmínkou" },
   "17": { date: "3. 9.",  title: "Variační počet s omezeními", min: 41, topics: "Řetězovka" },
-  // Podzim: názvy podle zápisků na Disku (DOUČOVÁNÍ\Škola matiky s Vojtou) a videí. Délka jen tam, kde je video.
-  "p01": { date: "10. 9.",  title: "Taylorovy řady", min: null, topics: "Taylorovy řady a jejich zbytek" },
-  "p02": { date: "17. 9.",  title: "Plošné a křivkové integrály", min: null, topics: "Dvojné integrály, Fubini a křivkové integrály" },
-  "p03": { date: "23. 9.",  title: "Euler-Lagrangeova rovnice a multiplikátory", min: null, topics: "Navázání na variační počet z léta" },
-  "p04": { date: "24. 9.",  title: "Potenciály a Greenova věta", min: null, topics: "Potenciály a Greenova věta" },
+  // Podzim: názvy podle zápisků na Disku (DOUČOVÁNÍ\Škola matiky s Vojtou) a videí. Délky z Vimea (záznamy
+  // v komunitě, složka Letní Škola › školní rok), zaokrouhlené na minuty; 1. 10. až 15. 10. sedí i s videi na disku.
+  "p01": { date: "10. 9.",  title: "Taylorovy řady", min: 63, topics: "Taylorovy řady a jejich zbytek" },
+  "p02": { date: "17. 9.",  title: "Plošné a křivkové integrály", min: 74, topics: "Dvojné integrály, Fubini a křivkové integrály" },
+  "p03": { date: "23. 9.",  title: "Euler-Lagrangeova rovnice a multiplikátory", min: 35, topics: "Navázání na variační počet z léta" },
+  "p04": { date: "24. 9.",  title: "Potenciály a Greenova věta", min: 74, topics: "Potenciály a Greenova věta" },
   "p05": { date: "1. 10.",  title: "Green a těžiště", min: 63, topics: "Greenova věta a středy České republiky" },
   "p06": { date: "12. 10.", title: "Komplexní čísla", min: 65, topics: "Gaussova rovina a počítání s komplexními čísly" },
   "p07": { date: "15. 10.", title: "Komplexní posloupnosti, řady a funkce", min: 68, topics: "Řady a funkce v komplexních číslech" },
