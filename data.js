@@ -5,10 +5,10 @@
 const JOIN_URL = "https://vojtakloud.com/p/p-ihla-se-do-letn-koly-matiky-s-vojtou-nko2ex6tt";
 
 // Vložená platba z Flixy: Můj obchod → Škola matiky → Možnosti → Embed platebního formuláře (experimentální).
-// enabled: true až ji Vojta ve Flixy zapne („Povolit“), vyplní „URL přesměrování po nákupu“ (…/dekujeme.html)
-// a do „URL stránek s platebním formulářem“ dá adresu, kde stránka poběží. Do té doby se ukazuje zástupný box.
+// Zapnutá ve Flixy 21. 10. 2026: „Povolit“, přesměrování po nákupu https://skola.vojtakloud.com/dekujeme.html,
+// stránky s formulářem https://skola.vojtakloud.com. enabled: false vrátí zástupný box a odkaz na Flixy.
 // Poplatek (Vyúčtování, 21. 10. 2026): 2,9 % + 12 Kč za objednávku přes embed, nahrazuje 1,9 % tarifu PRO.
-const CHECKOUT = { enabled: false, pageId: "cuq1koy1sau67w1yso6zkxpmb", script: "https://moje.flixy.cz/embed/v1/checkout.js" };
+const CHECKOUT = { enabled: true, pageId: "cuq1koy1sau67w1yso6zkxpmb", script: "https://moje.flixy.cz/embed/v1/checkout.js" };
 
 // Počty lidí ve škole. Stránka je bere živě z automatiky přístupů (Apps Script, list Objednávky, obnova do hodiny);
 // když se nenačtou, použije total a active odtud (ruční záloha, postup v marketing\snem-2026-10-19\SOUHRN.md).
