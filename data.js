@@ -23,6 +23,7 @@ const MEMBERS = {
 };
 
 // Letní přednášky (názvy podle souborů na Disku a postů v komunitě, délky z videí).
+// Rok se ukazuje 2026; přednáška z jiného roku dostane navíc year: 2027.
 const LESSONS = {
   "01": { date: "7. 7.",  title: "Úvod, logika", min: 68, topics: "Jazyk matematiky a logika" },
   "02": { date: "9. 7.",  title: "Matematická indukce", min: 63, topics: "Důkaz indukcí" },

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Škola matiky s Vojtou</title>
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="icon" href="media/favicon-32.png" type="image/png">
+<link rel="apple-touch-icon" href="media/apple-touch-icon.png">
 <script>document.documentElement.dataset.design = "k";</script>
 <style>
 @font-face { font-family: "Space Grotesk"; src: url("fonts/spacegrotesk-wght.ttf") format("truetype"); font-weight: 300 700; }
@@ -314,7 +317,7 @@ details p { margin: 8px 0 2px; color: #d7d7de; }
   </div>
 </div>
 
-<script src="data.js?v=da8fd513"></script>
+<script src="data.js?v=d5918fdc"></script>
 <script>
 const thumb = n => n.startsWith("p") ? `media/snimky/podzim-${n.slice(1)}.jpg` : `media/snimky/lekce-${n}.jpg`;
 for (const [n, p] of Object.entries(PREVIEWS)) LESSONS[n].preview = p;
@@ -344,7 +347,7 @@ chips.innerHTML = CHIPS.map(c => `<li>${c}</li>`).join("");
 function postHTML(n) {
   const l = LESSONS[n];
   const badge = l.preview ? '<span class="badge free">Ukázka zdarma</span>' : '';
-  const head = `<div class="post-head"><div class="date">${l.date} 2026${l.min ? " · " + l.min + " min" : ""}</div><h2>${l.title}${badge}</h2><p class="topics">${l.topics}</p></div>`;
+  const head = `<div class="post-head"><div class="date">${l.date} ${l.year || 2026}${l.min ? " · " + l.min + " min" : ""}</div><h2>${l.title}${badge}</h2><p class="topics">${l.topics}</p></div>`;
   const img = thumb(n);
   if (l.preview) {
     const p = l.preview, poster = p.file ? `media/ukazky/${p.file}.jpg` : img;
