@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Zkouška zvuku ukázek</title>
+<!-- DOČASNÉ (23. 10. 2026): zkouška, jak na iPhonu pustit ukázku z Vimea se zvukem. Po zkoušce smazat
+     (i řádek v _nastroje/sestav_web.py). Všechny 4 varianty pouští stejnou ukázku p07. -->
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #0d0e11; color: #fff; font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  h2 { font-size: 18px; margin: 28px 0 6px; color: #75c1ff; }
+  p { margin: 0 0 10px; color: #c9ccd3; }
+  .box { position: relative; aspect-ratio: 16 / 9; background: #000; }
+  .box iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .over { position: absolute; inset: 0; display: grid; place-items: center; pointer-events: none; }
+  .over span { width: 64px; height: 64px; border-radius: 50%; background: #75c1ff; display: grid; place-items: center; color: #0b0c0f; font-size: 28px; }
+  button { margin: 8px 8px 0 0; padding: 10px 14px; border: 0; border-radius: 4px; background: #75c1ff; color: #0b0c0f; font: 700 15px system-ui; }
+  pre { margin: 8px 0 0; padding: 8px; background: #16181d; color: #9fe39f; font: 12px/1.4 ui-monospace, monospace; white-space: pre-wrap; min-height: 3em; }
+</style>
+<script src="https://player.vimeo.com/api/player.js"></script>
+</head>
+<body>
+<main>
+  <h1>Zkouška zvuku na iPhonu</h1>
+  <p>Vyzkoušej postupně A až D. U každé napiš, jestli šel zvuk. Zelený výpis pod videem pošli jako snímek obrazovky.</p>
+
+  <h2>A. Jako teď na webu</h2>
+  <p>Klepni na tlačítko. Kdyby se ukázalo „Zapnout zvuk“, klepni i na něj.</p>
+  <div class="box" id="a"></div>
+  <button id="a-go">Přehrát A</button><button id="a-snd" hidden>Zapnout zvuk</button>
+  <pre id="a-log"></pre>
+
+  <h2>B. Klepnutí přímo do videa</h2>
+  <p>Klepni doprostřed videa (na modré kolečko).</p>
+  <div class="box" id="b"><div class="over"><span>▶</span></div></div>
+  <pre id="b-log"></pre>
+
+  <h2>C. Ovládání od Vimea</h2>
+  <p>Přehrávač s ovládáním Vimea (barva jako stránka). Klepni na jeho tlačítko přehrát.</p>
+  <div class="box" id="c"></div>
+  <pre id="c-log"></pre>
+
+  <h2>D. Ztlumeně, pak zvuk tlačítkem</h2>
+  <p>Klepni na Přehrát D, video poběží ztlumeně, pak klepni na Zapnout zvuk.</p>
+  <div class="box" id="d"></div>
+  <button id="d-go">Přehrát D</button><button id="d-snd">Zapnout zvuk</button>
+  <pre id="d-log"></pre>
+</main>
+<script>
+const ID = "1238593754", H = "e116c1ecc8";
+const url = q => `https://player.vimeo.com/video/${ID}?h=${H}&dnt=1&playsinline=1&title=0&byline=0&portrait=0&${q}`;
+const t0 = Date.now();
+function frame(box, q) { const f = document.createElement("iframe"); f.src = url(q);
+  f.allow = "autoplay; fullscreen; picture-in-picture"; document.getElementById(box).prepend(f); return f; }
+function watch(name, f) {
+  const log = document.getElementById(name + "-log"), out = s => { log.textContent += ((Date.now() - t0) / 1000).toFixed(1) + " s  " + s + "\n"; };
+  const p = new Vimeo.Player(f);
+  for (const ev of ["play", "pause", "volumechange", "ended", "error"]) p.on(ev, d => out(ev + " " + JSON.stringify(d || {})));
+  p.ready().then(() => out("připraveno")).catch(e => out("chyba " + e.name));
+  setInterval(() => Promise.all([p.getMuted(), p.getVolume(), p.getPaused()]).then(([m, v, z]) =>
+    log.dataset.s = `ztlumeno ${m}, hlasitost ${v}, pauza ${z}`), 1000);
+  setInterval(() => { if (log.dataset.s && log.dataset.last !== log.dataset.s) { out(log.dataset.s); log.dataset.last = log.dataset.s; } }, 1000);
+  return { p, out };
+}
+// A: stejně jako web: tlačítko stránky vloží přehrávač s autoplay, když nezačne, zkusí play(), pak ztlumeně
+document.getElementById("a-go").onclick = () => {
+  const { p, out } = watch("a", frame("a", "controls=0&autoplay=1&autopause=0"));
+  let started = false; p.on("play", () => { started = true; });
+  p.ready().then(() => setTimeout(() => { if (started) return out("hraje samo");
+    p.play().then(() => out("play() ok")).catch(e => { out("play() odmítnuto " + e.name);
+      p.setMuted(true).then(() => p.play()).then(() => { out("hraje ztlumeně"); document.getElementById("a-snd").hidden = false; })
+        .catch(x => out("ani ztlumeně " + x.name)); }); }, 1200));
+  document.getElementById("a-snd").onclick = () => p.setMuted(false).then(() => p.setVolume(1)).then(() => out("zvuk zapnut z tlačítka"))
+    .catch(e => out("zapnutí zvuku odmítnuto " + e.name));
+};
+// B: přehrávač je načtený hned, bez ovládání; klepnutí jde přímo do něj
+watch("b", frame("b", "controls=0&autoplay=0"));
+// C: vlastní ovládání Vimea, barva stránky
+watch("c", frame("c", "controls=1&autoplay=0&color=75c1ff"));
+// D: ztlumené přehrání tlačítkem, zvuk zvlášť
+let dp;
+document.getElementById("d-go").onclick = () => { const w = watch("d", frame("d", "controls=0&autoplay=1&muted=1")); dp = w; };
+document.getElementById("d-snd").onclick = () => { if (!dp) return;
+  dp.p.setMuted(false).then(() => dp.p.setVolume(1)).then(() => dp.out("zvuk zapnut z tlačítka")).catch(e => dp.out("odmítnuto " + e.name)); };
+</script>
+</body>
+</html>
