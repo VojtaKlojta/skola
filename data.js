@@ -22,6 +22,15 @@ const MEMBERS = {
   labelActive: "lidí je teď ve škole",
 };
 
+// Měření návštěv (24. 10. 2026, Vojta: „aspoň trackování té stránky“): návštěva, otevření platby, nákup a chyba
+// platby se značkou z odkazu (?z=st2610) jdou do listu Návštěvy v tabulce „Přístupy ke kurzům (automatika)“ přes
+// stejnou webovou aplikaci jako počty. Měří se jen na adrese host; url: "" měření vypne.
+// Značky a postup: CopyWriting\automatizace\byznys-data\README.md.
+const MERENI = {
+  url: "https://script.google.com/macros/s/AKfycbw2bl44rErHdZxOkjOy-179hPoNK8M2zv9CH0pOVVivPWAMDnHehcB1QIVfZtTnrh2D/exec",
+  host: "skola.vojtakloud.com",
+};
+
 // Letní přednášky (názvy podle souborů na Disku a postů v komunitě, délky z videí).
 // Rok se ukazuje 2026; přednáška z jiného roku dostane navíc year: 2027.
 const LESSONS = {

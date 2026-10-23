@@ -338,7 +338,7 @@ details p { margin: 8px 0 2px; color: #d7d7de; }
   </div>
 </div>
 
-<script src="data.js?v=86a00aff"></script>
+<script src="data.js?v=33dfe2ce"></script>
 <script>
 const thumb = n => n.startsWith("p") ? `media/snimky/podzim-${n.slice(1)}.jpg` : `media/snimky/lekce-${n}.jpg`;
 for (const [n, p] of Object.entries(PREVIEWS)) LESSONS[n].preview = p;
@@ -352,6 +352,40 @@ const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="#1
 
 const $ = (s, el = document) => el.querySelector(s);
 const feed = $("#feed"), minis = $("#minis"), chips = $("#chips");
+
+// Měření (24. 10. 2026): návštěva, otevření platby, nákup a chyba platby se značkou z odkazu (?z=st2610) jdou do listu
+// Návštěvy v tabulce „Přístupy ke kurzům (automatika)“ (MERENI v data.js). Bez cookies a bez úložiště v prohlížeči:
+// posílá se jen značka, doména, odkud člověk přišel, aplikace (IG, TikTok…) a mobil nebo počítač. Každá událost nejvýš
+// jednou za načtení stránky. Lokální náhled, jiná adresa a roboti nic neposílají.
+const mereni = (() => {
+  const q = new URLSearchParams(location.search), ua = navigator.userAgent;
+  const cista = s => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9-]/g, "").slice(0, 16);
+  const znacka = cista(q.get("z")) || (q.get("utm_source") ? cista("utm-" + q.get("utm_source")) : "");
+  let odkud = "";
+  try { const r = new URL(document.referrer); if (r.hostname !== location.hostname) odkud = r.hostname; } catch (e) {}
+  const app = /Instagram/.test(ua) ? "ig" : /musical_ly|TikTok|Bytedance/i.test(ua) ? "tt"
+    : /Messenger|Orca-Android/.test(ua) ? "ms" : /FBAN|FBAV|FB_IAB/.test(ua) ? "fb" : "";
+  const M = typeof MERENI === "object" ? MERENI : {};
+  const zap = M.url && location.hostname === M.host && !navigator.webdriver
+    && !/bot|crawl|spider|headless|lighthouse|preview/i.test(ua);
+  const poslano = {};
+  const jednou = (u, navic) => {
+    if (!zap || poslano[u]) return;
+    poslano[u] = true;
+    const p = new URLSearchParams(Object.assign({ u, z: znacka, o: odkud, a: app, m: /Mobi|Android|iPhone|iPad/.test(ua) ? "mobil" : "pc" }, navic));
+    // keepalive: nákup odchází těsně před přesměrováním na děkovací stránku
+    try { fetch(M.url + "?" + p, { credentials: "omit", keepalive: true, mode: "no-cors", cache: "no-store" }).catch(() => {}); } catch (e) {}
+  };
+  // návštěva jen při novém načtení (ne obnovení, ne krok zpět) a až když je stránka opravdu vidět
+  const nav = performance.getEntriesByType("navigation")[0];
+  if (!nav || nav.type === "navigate") {
+    const vidim = () => { if (document.visibilityState !== "visible") return;
+      document.removeEventListener("visibilitychange", vidim); jednou("navsteva"); };
+    document.addEventListener("visibilitychange", vidim); vidim();
+  }
+  return { platba: () => jednou("platba"), chyba: () => jednou("chyba"),
+    nakup: cena => jednou("nakup", { c: Number.isFinite(cena) ? cena : "" }) };
+})();
 
 // Počet lidí: nejdřív záloha z data.js, pak živá čísla z automatiky (bez cookies, bez osobních údajů).
 function showMembers(m) {
@@ -568,14 +602,16 @@ function mountCheckout() {
   // Pokladna (React) kreslí jen do .embed-mount, na ten nesaháme; hláška je zvlášť v .embed-msg.
   const box = $(".embed"), msg = $(".embed-msg"), target = $(".embed-mount");
   const fail = () => { box.classList.remove("nactena"); target.hidden = true; msg.hidden = false;
-    msg.textContent = "Platbu se nepodařilo načíst, pokračuj přes odkaz níž."; };
+    msg.textContent = "Platbu se nepodařilo načíst, pokračuj přes odkaz níž."; mereni.chyba(); };
   msg.textContent = "Načítám platbu…";
   new MutationObserver((_, o) => { if (target.childElementCount && !target.hidden) { msg.hidden = true; box.classList.add("nactena"); o.disconnect(); } })
     .observe(target, { childList: true });
   const go = () => {
     try {
       window.FlixyCheckout.setConsent({ marketing: false, analytics: false });
-      window.FlixyCheckout.mount(target, { pageId: CHECKOUT.pageId, locale: "cs", onError: fail });
+      // onConversion: Flixy ho zavolá po zaplacení, těsně před přesměrováním na děkovací stránku
+      window.FlixyCheckout.mount(target, { pageId: CHECKOUT.pageId, locale: "cs", onError: fail,
+        onConversion: d => { if (d && d.event === "purchase") mereni.nakup(Number(d.orderPrice)); } });
     } catch (e) { fail(); }
   };
   if (window.FlixyCheckout) return go();
@@ -589,7 +625,7 @@ document.addEventListener("click", e => {
   if (!t) { if (e.target === modal) modal.classList.remove("on"); return; }
   if (t.dataset.play) play(t.dataset.play);
   else if (t.dataset.replay) play(t.dataset.replay);
-  else if ("join" in t.dataset) { pauseAll(); modal.classList.add("on"); mountCheckout(); }
+  else if ("join" in t.dataset) { pauseAll(); modal.classList.add("on"); mountCheckout(); mereni.platba(); }
   else if ("close" in t.dataset) modal.classList.remove("on");
   else if (t.dataset.filter) {
     const free = t.dataset.filter === "free";
