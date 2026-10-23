@@ -194,7 +194,8 @@ details p { margin: 8px 0 2px; color: #d7d7de; }
 .embed { border: 1px dashed #6b5a22; border-radius: 14px; padding: 18px; text-align: center; color: #ffd66b; background: #1d1806; font-size: 14px; margin: 0 0 12px; }
 .fallback { margin: 0; text-align: center; font-size: 13px; color: var(--muted); }
 /* vložená platba: box bez rámečku, barvy formuláře přes proměnné Flixy (nastavené ve variantě designu) */
-.embed.live { border: 0; outline: 0; padding: 0; background: none; text-align: left; color: inherit; }
+/* .nactena: pokladna z Flixy se vložila (dřív .live, ta ale přidávala červenou tečku „živě“) */
+.embed.nactena { border: 0; outline: 0; padding: 0; background: none; text-align: left; color: inherit; }
 [data-flixy-checkout] { --flixy-checkout-font-family: "Raleway", system-ui, sans-serif; }
 .fallback a { color: inherit; text-decoration: underline; }
 .close { position: absolute; right: 12px; top: 10px; border: 0; background: transparent; font-size: 26px; color: var(--muted); }
@@ -203,7 +204,7 @@ details p { margin: 8px 0 2px; color: #d7d7de; }
 
 
 </style>
-<link rel="stylesheet" href="design-k.css?v=5ba67b15">
+<link rel="stylesheet" href="design-k.css?v=6d512957">
 </head>
 <body>
 
@@ -566,10 +567,10 @@ function mountCheckout() {
   checkoutMounted = true;
   // Pokladna (React) kreslí jen do .embed-mount, na ten nesaháme; hláška je zvlášť v .embed-msg.
   const box = $(".embed"), msg = $(".embed-msg"), target = $(".embed-mount");
-  const fail = () => { box.classList.remove("live"); target.hidden = true; msg.hidden = false;
+  const fail = () => { box.classList.remove("nactena"); target.hidden = true; msg.hidden = false;
     msg.textContent = "Platbu se nepodařilo načíst, pokračuj přes odkaz níž."; };
   msg.textContent = "Načítám platbu…";
-  new MutationObserver((_, o) => { if (target.childElementCount && !target.hidden) { msg.hidden = true; box.classList.add("live"); o.disconnect(); } })
+  new MutationObserver((_, o) => { if (target.childElementCount && !target.hidden) { msg.hidden = true; box.classList.add("nactena"); o.disconnect(); } })
     .observe(target, { childList: true });
   const go = () => {
     try {

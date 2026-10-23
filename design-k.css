@@ -216,7 +216,7 @@
   color: var(--embed-text); font-weight: 600; font-size: 15px; line-height: var(--g); margin: 0 0 var(--g);
   padding: calc(var(--g) + var(--g) / 2 - var(--k-r) * 15px) 16px calc(var(--g) - var(--g) / 2 + var(--k-r) * 15px); }
 /* načtená pokladna: bez rámečku a pozadí zástupného boxu, kartu kreslí Flixy */
-[data-design="k"] .embed.live { outline: 0; padding: 0; background: none; }
+[data-design="k"] .embed.nactena { outline: 0; padding: 0; background: none; }
 [data-design="k"] .fallback { color: var(--muted); font-size: 13px; }
 [data-design="k"] .fallback a { color: var(--accent); }
 [data-design="k"] .close { color: var(--accent); font-size: 30px; top: 10px; }
