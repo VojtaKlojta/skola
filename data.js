@@ -69,18 +69,20 @@ const SECTIONS = [
 ];
 
 // Ukázky: zhruba každý druhý příspěvek shora. file = media/ukazky/<file>.mp4 a .jpg (náhled), len = délka.
+// vimeo + h = skryté video na Vimeu (jen vložení na skola.vojtakloud.com, _nastroje/ukazka_na_vimeo.py); bez nich
+// hraje stránka lokální media/ukazky/<file>.mp4 (třeba kandidát ke schválení). Náhled je vždy lokální .jpg.
 // Kde je file null, ukázka se teprve vybírá. Náhradníci a časy: UKAZKY.md.
 const PREVIEWS = {
-  "p07": { file: "p07-sinus-rovna-dvema", title: "Kdy se sinus rovná dvěma", len: "0:56" },
-  "p05": { file: "p05-sklad-s-drony", title: "Kam postavit sklad s drony", len: "1:05" },
-  "17": { file: "17-retez-nevisi-do-paraboly", title: "Řetěz nevisí do paraboly", len: "1:16" },
-  "15": { file: "15-optimalni-skluzavka", title: "Hledáme optimální skluzavku", len: "1:18" },
-  "13": { file: "13-pul-faktorial", title: "Kolika způsoby seřadíš půl věci?", len: "0:58" },
-  "11": { file: "11-parabola-z-odrazu", title: "Parabola z odrazu světla", len: "1:09" },
-  "09": { file: "09-proc-integral-pocita-obsah", title: "Proč integrál počítá obsah", len: "1:17" },
-  "07": { file: "07-lina-priroda", title: "Proč je příroda líná", len: "0:58" },
-  "04": { file: "04-banka-cislo-e", title: "Banka, úroky a číslo e", len: "1:17" },
-  "02": { file: "02-pi-z-lichych-cisel", title: "Pí z lichých čísel", len: "1:10" },
+  "p07": { file: "p07-sinus-rovna-dvema", title: "Kdy se sinus rovná dvěma", len: "0:56", vimeo: "1238593754", h: "e116c1ecc8" },
+  "p05": { file: "p05-sklad-s-drony", title: "Kam postavit sklad s drony", len: "1:05", vimeo: "1238593775", h: "11f722e1f3" },
+  "17": { file: "17-retez-nevisi-do-paraboly", title: "Řetěz nevisí do paraboly", len: "1:16", vimeo: "1238593798", h: "bc58aa88d3" },
+  "15": { file: "15-optimalni-skluzavka", title: "Hledáme optimální skluzavku", len: "1:18", vimeo: "1238593818", h: "873e46f9d3" },
+  "13": { file: "13-pul-faktorial", title: "Kolika způsoby seřadíš půl věci?", len: "0:58", vimeo: "1238593833", h: "22bf6dc680" },
+  "11": { file: "11-parabola-z-odrazu", title: "Parabola z odrazu světla", len: "1:09", vimeo: "1238593866", h: "d277f532d0" },
+  "09": { file: "09-proc-integral-pocita-obsah", title: "Proč integrál počítá obsah", len: "1:17", vimeo: "1238593900", h: "1016325732" },
+  "07": { file: "07-lina-priroda", title: "Proč je příroda líná", len: "0:58", vimeo: "1238593924", h: "0b1a467147" },
+  "04": { file: "04-banka-cislo-e", title: "Banka, úroky a číslo e", len: "1:17", vimeo: "1238593946", h: "865c01407a" },
+  "02": { file: "02-pi-z-lichych-cisel", title: "Pí z lichých čísel", len: "1:10", vimeo: "1238593956", h: "d992a45650" },
 };
 const CHIPS = ["logika", "indukce", "limity", "nekonečné řady", "derivace", "integrály", "diferenciální rovnice",
   "funkce více proměnných", "Feynmanův trik", "variační počet", "brachistochrona", "řetězovka"];

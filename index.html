@@ -115,6 +115,12 @@ button { font: inherit; color: inherit; cursor: pointer; }
   opacity: 0; transition: opacity .2s; pointer-events: none; }
 .media.vp-show .vp, .media.vp-paused .vp { opacity: 1; pointer-events: auto; }
 .media.vp-on video { cursor: pointer; }
+/* ukázka z Vimea: přehrávač bez vlastních ovládacích prvků, kliknutí chytá průhledná vrstva nad ním */
+.media iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.vp-hit { position: absolute; inset: 0; z-index: 1; cursor: pointer; }
+.vp-hit[hidden] { display: none; }
+.vp-tap { position: absolute; left: 50%; top: 50%; z-index: 1; transform: translate(-50%, -50%); padding: 8px 14px; border-radius: 8px;
+  background: rgba(0,0,0,.7); color: #fff; font-size: 14px; font-weight: 700; pointer-events: none; }
 .vp-btn { border: 0; background: none; color: #fff; width: 40px; height: 40px; display: grid; place-items: center; padding: 0; flex: none; border-radius: 3px; }
 .vp-btn svg { width: 22px; height: 22px; fill: currentColor; }
 .vp-btn:hover { background: rgba(255,255,255,.12); }
@@ -126,6 +132,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .vp-time { font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; padding: 0 4px; }
 .media:fullscreen { aspect-ratio: auto; background: #000; }
 .media:fullscreen video { object-fit: contain; }
+.media:fullscreen iframe { height: 100%; }
 @media (max-width: 520px) { .vp-time { display: none; } .vp { gap: 4px; } }
 .end.on { z-index: 3; }
 .end { position: absolute; inset: 0; background: rgba(10,10,12,.88); display: none; place-content: center; justify-items: center; text-align: center; gap: 10px; padding: 20px; }
@@ -330,7 +337,7 @@ details p { margin: 8px 0 2px; color: #d7d7de; }
   </div>
 </div>
 
-<script src="data.js?v=6d4fa484"></script>
+<script src="data.js?v=86a00aff"></script>
 <script>
 const thumb = n => n.startsWith("p") ? `media/snimky/podzim-${n.slice(1)}.jpg` : `media/snimky/lekce-${n}.jpg`;
 for (const [n, p] of Object.entries(PREVIEWS)) LESSONS[n].preview = p;
@@ -407,7 +414,9 @@ const ICON_MUTE = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path
 const ICON_FULL = '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
 
-function buildPlayer(box, v) {
+// Lišta pracuje s „médiem“ m: lokální video (videoMedia) nebo Vimeo (vimeoMedia), obojí má stejné rozhraní:
+// paused, time, duration, muted, play(), pause(), seek(t), setMuted(b), fullscreen(), on(událost, fn).
+function buildPlayer(box, m) {
   box.classList.add("vp-on");
   box.insertAdjacentHTML("beforeend", `<div class="vp">
     <button class="vp-btn vp-toggle" aria-label="Pozastavit">${ICON_PAUSE}</button>
@@ -417,66 +426,123 @@ function buildPlayer(box, v) {
     <button class="vp-btn vp-full" aria-label="Celá obrazovka">${ICON_FULL}</button></div>`);
   const ui = box.querySelector(".vp"), tog = ui.querySelector(".vp-toggle"), bar = ui.querySelector(".vp-bar"),
     fill = ui.querySelector(".vp-fill"), time = ui.querySelector(".vp-time"), mute = ui.querySelector(".vp-mute");
-  const sync = () => { const d = v.duration || 0, t = v.currentTime || 0;
+  const sync = () => { const d = m.duration, t = m.time;
     fill.style.width = d ? (t / d * 100) + "%" : "0"; time.textContent = fmt(t) + " / " + fmt(d);
     bar.setAttribute("aria-valuenow", d ? Math.round(t / d * 100) : 0); };
-  const state = () => { tog.innerHTML = v.paused ? ICON_PLAY_S : ICON_PAUSE;
-    tog.setAttribute("aria-label", v.paused ? "Přehrát" : "Pozastavit"); box.classList.toggle("vp-paused", v.paused); };
-  let hideT;
+  const state = () => { tog.innerHTML = m.paused ? ICON_PLAY_S : ICON_PAUSE;
+    tog.setAttribute("aria-label", m.paused ? "Přehrát" : "Pozastavit"); box.classList.toggle("vp-paused", m.paused); };
+  const muteIcon = () => { mute.innerHTML = m.muted ? ICON_MUTE : ICON_SOUND;
+    mute.setAttribute("aria-label", m.muted ? "Zapnout zvuk" : "Vypnout zvuk"); };
+  let hideT, quiet = false;  // quiet: prohlížeč pustil jen ztlumeně, první klepnutí zapne zvuk
   const wake = () => { box.classList.add("vp-show"); clearTimeout(hideT);
-    hideT = setTimeout(() => { if (!v.paused) box.classList.remove("vp-show"); }, 2200); };
-  const toggle = () => { v.paused ? v.play().catch(() => {}) : v.pause(); };
-  v.addEventListener("timeupdate", sync); v.addEventListener("loadedmetadata", sync);
-  v.addEventListener("play", () => { state(); wake(); });
-  v.addEventListener("pause", () => { state(); box.classList.add("vp-show"); });
-  v.addEventListener("click", toggle);
+    hideT = setTimeout(() => { if (!m.paused) box.classList.remove("vp-show"); }, 2200); };
+  const sound = () => { quiet = false; box.querySelector(".vp-tap")?.remove(); m.setMuted(false); };
+  const toggle = () => { if (quiet) return sound(); m.paused ? m.play() : m.pause(); };
+  m.on("time", sync); m.on("ready", () => { sync(); muteIcon(); });
+  m.on("play", () => { state(); wake(); });
+  m.on("pause", () => { state(); box.classList.add("vp-show"); });
+  m.on("muted", muteIcon);
+  m.on("blocked", () => { quiet = true; muteIcon();
+    if (!box.querySelector(".vp-tap")) box.insertAdjacentHTML("beforeend", '<span class="vp-tap">Klepni pro zvuk</span>'); });
+  (box.querySelector(".vp-hit") || m.el).addEventListener("click", toggle);
   box.addEventListener("pointermove", wake); box.addEventListener("touchstart", wake, { passive: true });
   tog.addEventListener("click", toggle);
-  mute.addEventListener("click", () => { v.muted = !v.muted; mute.innerHTML = v.muted ? ICON_MUTE : ICON_SOUND;
-    mute.setAttribute("aria-label", v.muted ? "Zapnout zvuk" : "Vypnout zvuk"); });
+  mute.addEventListener("click", () => quiet ? sound() : m.setMuted(!m.muted));
   ui.querySelector(".vp-full").addEventListener("click", () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     if (box.requestFullscreen) box.requestFullscreen().catch(() => {});
-    else if (v.webkitEnterFullscreen) v.webkitEnterFullscreen();  // iPhone: jen celé video
+    else m.fullscreen();  // iPhone: jen samotné video
   });
   const seek = e => { const r = bar.getBoundingClientRect(), x = Math.min(Math.max((e.clientX - r.left) / r.width, 0), 1);
-    if (v.duration) v.currentTime = x * v.duration; sync(); wake(); };
+    if (m.duration) m.seek(x * m.duration); sync(); wake(); };
   bar.addEventListener("pointerdown", e => { bar.setPointerCapture(e.pointerId); seek(e);
     const mv = ev => seek(ev); bar.addEventListener("pointermove", mv);
     bar.addEventListener("pointerup", () => bar.removeEventListener("pointermove", mv), { once: true }); });
   bar.addEventListener("keydown", e => {
-    if (e.key === "ArrowRight") v.currentTime = Math.min(v.duration || 0, v.currentTime + 5);
-    if (e.key === "ArrowLeft") v.currentTime = Math.max(0, v.currentTime - 5); });
+    if (e.key === "ArrowRight") m.seek(Math.min(m.duration, m.time + 5));
+    if (e.key === "ArrowLeft") m.seek(Math.max(0, m.time - 5)); sync(); });
   state(); sync();
 }
 
+// Lokální soubor media/ukazky/<file>.mp4: kandidát ukázky ke schválení, než jde na Vimeo.
+function videoMedia(p) {
+  const v = document.createElement("video");
+  v.src = `media/ukazky/${p.file}.mp4`; v.poster = `media/ukazky/${p.file}.jpg`;
+  // bez vestavěných ovládacích prvků prohlížeče (menu se Stáhnout, rychlostí a obraz v obraze)
+  v.controls = false; v.playsInline = true; v.preload = "auto"; v.disablePictureInPicture = true;
+  v.setAttribute("controlsList", "nodownload noplaybackrate noremoteplayback");
+  v.addEventListener("contextmenu", e => e.preventDefault());
+  const ev = { time: "timeupdate", ready: "loadedmetadata", muted: "volumechange" };
+  return { el: v, get paused() { return v.paused; }, get time() { return v.currentTime || 0; },
+    get duration() { return v.duration || 0; }, get muted() { return v.muted; },
+    play: () => v.play().catch(() => {}), pause: () => v.pause(), seek: t => { v.currentTime = t; },
+    setMuted: b => { v.muted = b; }, fullscreen: () => v.webkitEnterFullscreen && v.webkitEnterFullscreen(),
+    on: (name, fn) => v.addEventListener(ev[name] || name, fn) };
+}
+
+// Vimeo: skryté video jen pro vložení na skola.vojtakloud.com (_nastroje/ukazka_na_vimeo.py). dnt=1, takže Vimeo
+// nenastavuje cookies ani neměří; controls=0 schová jeho ovládání, lištu kreslí stránka a řídí ho přes Player API.
+// Skript Vimea se načte až po prvním kliknutí na Přehrát, do té doby stránka k Vimeu nic neposílá.
+let vimeoApi;
+const loadVimeo = () => vimeoApi || (vimeoApi = new Promise((ok, fail) => {
+  const s = document.createElement("script"); s.src = "https://player.vimeo.com/api/player.js";
+  s.onload = () => ok(window.Vimeo); s.onerror = () => { vimeoApi = null; fail(); }; document.head.appendChild(s); }));
+function vimeoMedia(p) {
+  const f = document.createElement("iframe");
+  f.src = `https://player.vimeo.com/video/${p.vimeo}?h=${p.h}&dnt=1&controls=0&autoplay=1&playsinline=1` +
+    "&title=0&byline=0&portrait=0&autopause=0&keyboard=0";
+  f.allow = "autoplay; fullscreen; picture-in-picture"; f.title = "Ukázka: " + p.title;
+  const st = { paused: true, time: 0, duration: 0, muted: false }, hs = {};
+  const fire = n => (hs[n] || []).forEach(fn => fn());
+  let pl, started = false;
+  const m = { el: f, get paused() { return st.paused; }, get time() { return st.time; },
+    get duration() { return st.duration; }, get muted() { return st.muted; },
+    play: () => { if (pl) pl.play().catch(() => {}); }, pause: () => { if (pl) pl.pause().catch(() => {}); },
+    seek: t => { st.time = t; if (pl) pl.setCurrentTime(t).catch(() => {}); },
+    setMuted: b => { if (pl) pl.setMuted(b).then(() => { st.muted = b; fire("muted"); }).catch(() => {}); },
+    fullscreen: () => { if (pl) pl.requestFullscreen().catch(() => {}); },
+    on: (n, fn) => (hs[n] = hs[n] || []).push(fn) };
+  loadVimeo().then(V => {
+    pl = new V.Player(f);
+    pl.on("timeupdate", e => { st.time = e.seconds; st.duration = e.duration; fire("time"); });
+    pl.on("play", () => { started = true; st.paused = false; fire("play"); });
+    pl.on("pause", () => { st.paused = true; fire("pause"); });
+    pl.on("ended", () => { st.paused = true; fire("pause"); fire("ended"); });
+    pl.on("error", () => fire("error"));
+    pl.ready().then(() => pl.getDuration()).then(d => { st.duration = d; fire("ready");
+      // autoplay se zvukem prohlížeč někdy nepustí (hlavně iPhone): pak pustit ztlumeně a nabídnout zvuk
+      setTimeout(() => { if (started) return;
+        pl.play().catch(() => pl.setMuted(true).then(() => { st.muted = true; fire("blocked"); return pl.play(); }).catch(() => {})); }, 1200);
+    }).catch(() => fire("error"));
+  }).catch(() => fire("error"));
+  return m;
+}
+
+const players = new Map();
+const pauseAll = except => players.forEach((m, k) => { if (k !== except && !m.paused) m.pause(); });
+
 function play(n) {
   const box = document.querySelector(`.media[data-n="${n}"]`);
-  let v = box.querySelector("video");
+  const missing = t => { if (!box.querySelector(".missing")) box.insertAdjacentHTML("beforeend", `<span class="missing">${t}</span>`); };
+  let m = players.get(n);
   box.querySelector(".end").classList.remove("on");
-  if (!v) {
+  if (!m) {
     const p = LESSONS[n].preview;
-    if (!p.file) {
-      if (!box.querySelector(".missing")) box.insertAdjacentHTML("beforeend", '<span class="missing">Ukázka se ještě vybírá</span>');
-      return;
-    }
-    v = document.createElement("video");
-    v.src = `media/ukazky/${p.file}.mp4`;
-    v.poster = `media/ukazky/${p.file}.jpg`;
-    // vlastní přehrávač: bez vestavěných ovládacích prvků (menu se Stáhnout, rychlostí a obraz v obraze)
-    v.controls = false; v.playsInline = true; v.preload = "auto"; v.disablePictureInPicture = true;
-    v.setAttribute("controlsList", "nodownload noplaybackrate noremoteplayback");
-    v.addEventListener("contextmenu", e => e.preventDefault());
-    v.addEventListener("ended", () => { box.classList.remove("vp-show"); box.querySelector(".end").classList.add("on"); });
-    v.addEventListener("error", () => {
-      if (!box.querySelector(".missing")) box.insertAdjacentHTML("beforeend", '<span class="missing">Ukázka se ještě stříhá</span>');
-    });
-    box.querySelector("img").replaceWith(v);
+    if (!p.vimeo && !p.file) return missing("Ukázka se ještě vybírá");
+    m = p.vimeo ? vimeoMedia(p) : videoMedia(p);
+    players.set(n, m);
+    m.on("ended", () => { box.classList.remove("vp-show"); box.querySelector(".end").classList.add("on"); });
+    m.on("error", () => missing("Ukázka se nenačetla, zkus to prosím znovu"));
+    if (p.vimeo) {
+      // náhled zůstane pod přehrávačem, dokud Vimeo nezačne hrát; kliknutí chytá vrstva .vp-hit
+      box.prepend(m.el); box.insertAdjacentHTML("beforeend", '<div class="vp-hit"></div>');
+      m.on("play", () => box.querySelector(":scope > img")?.remove());
+    } else box.querySelector("img").replaceWith(m.el);
     box.querySelector(".play").remove();
-    buildPlayer(box, v);
-  } else { v.currentTime = 0; }
-  document.querySelectorAll("video").forEach(o => { if (o !== v) o.pause(); });
-  v.play().catch(() => {});
+    buildPlayer(box, m);
+  } else m.seek(0);
+  pauseAll(n);
+  m.play();
 }
 
 const modal = $("#modal");
@@ -513,7 +579,7 @@ document.addEventListener("click", e => {
   if (!t) { if (e.target === modal) modal.classList.remove("on"); return; }
   if (t.dataset.play) play(t.dataset.play);
   else if (t.dataset.replay) play(t.dataset.replay);
-  else if ("join" in t.dataset) { document.querySelectorAll("video").forEach(v => v.pause()); modal.classList.add("on"); mountCheckout(); }
+  else if ("join" in t.dataset) { pauseAll(); modal.classList.add("on"); mountCheckout(); }
   else if ("close" in t.dataset) modal.classList.remove("on");
   else if (t.dataset.filter) {
     const free = t.dataset.filter === "free";
