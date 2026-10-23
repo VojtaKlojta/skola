@@ -499,13 +499,22 @@ function vimeoMedia(p) {
     get duration() { return st.duration; }, get muted() { return st.muted; },
     play: () => { if (pl) pl.play().catch(() => {}); }, pause: () => { if (pl) pl.pause().catch(() => {}); },
     seek: t => { st.time = t; if (pl) pl.setCurrentTime(t).catch(() => {}); },
-    setMuted: b => { if (pl) pl.setMuted(b).then(() => { st.muted = b; fire("muted"); }).catch(() => {}); },
+    // zapnutí zvuku nastaví i hlasitost: Vimeo při ztlumeném startu někdy stáhne hlasitost na 0
+    setMuted: b => { if (pl) (b ? pl.setMuted(true) : pl.setMuted(false).then(() => pl.setVolume(1)))
+      .then(() => { st.muted = b; fire("muted"); }).catch(() => {}); },
     fullscreen: () => { if (pl) pl.requestFullscreen().catch(() => {}); },
     on: (n, fn) => (hs[n] = hs[n] || []).push(fn) };
   loadVimeo().then(V => {
     pl = new V.Player(f);
     pl.on("timeupdate", e => { st.time = e.seconds; st.duration = e.duration; fire("time"); });
-    pl.on("play", () => { started = true; st.paused = false; fire("play"); });
+    // iPhone: Safari pustí zvuk jen po klepnutí přímo do přehrávače, Vimeo proto začne ztlumeně (ověřil Vojta
+    // 23. 10.). Po startu zjistit skutečný stav, zkusit zvuk zapnout, a když to nejde, lišta ukáže „Klepni pro zvuk“.
+    const quietCheck = () => Promise.all([pl.getMuted(), pl.getVolume()]).then(([mu, vo]) => mu || vo === 0);
+    pl.on("play", () => { const first = !started; started = true; st.paused = false; fire("play");
+      if (!first) return;
+      quietCheck().then(q => q && pl.setMuted(false).then(() => pl.setVolume(1)).catch(() => {})
+        .then(() => new Promise(r => setTimeout(r, 400))).then(quietCheck)
+        .then(still => { st.muted = still; fire(still ? "blocked" : "muted"); })).catch(() => {}); });
     pl.on("pause", () => { st.paused = true; fire("pause"); });
     pl.on("ended", () => { st.paused = true; fire("pause"); fire("ended"); });
     pl.on("error", () => fire("error"));
