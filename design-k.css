@@ -206,7 +206,8 @@
 [data-design="k"] .modal { background: var(--modal-dim); }
 [data-design="k"] .sheet { border: 0; border-radius: 2px; padding: var(--g); outline: 1px solid var(--outline); outline-offset: -1px;
   box-shadow: inset 0 6px 0 var(--accent); color: var(--text);
-  background-color: var(--sheet); background-image: var(--sgrid); background-size: var(--g) var(--g); background-attachment: local; }
+  /* bez mřížky: s formulářem Flixy působila přeplněně (Vojta 23. 10. vybral variantu D) */
+  background-color: var(--sheet); }
 [data-design="k"] .sheet h2 { font-size: 24px; font-weight: 700; letter-spacing: -.015em; margin: 0; padding-right: 28px; }
 [data-design="k"] .sheet .price { --lh: calc(2 * var(--g)); color: var(--muted); margin: 0 0 var(--g); font-size: 15px; }
 [data-design="k"] .sheet .price b { color: var(--accent); font-family: "Space Grotesk", sans-serif; font-size: 26px; line-height: 0; }
@@ -265,3 +266,7 @@
 }
 /* tlačítko zaplatit: světle modrá s tmavým textem jako ostatní akce */
 [data-design="k"] [data-flixy-element="submit"] { color: #0b0c0f; font-weight: 700; }
+/* klidnější pokladna (varianta D, 23. 10.): karta bez vlastního rámečku a pozadí, takže okno je jedna plocha;
+   souhrn ceny s tlumeným rámečkem místo jasně bílého. Flixy kreslí rámečky sám, proto !important */
+[data-design="k"] [data-flixy-element="card"] { border-color: transparent !important; box-shadow: none !important; background: transparent !important; }
+[data-design="k"] [data-flixy-element="summary-panel"] { border-color: var(--outline) !important; }
