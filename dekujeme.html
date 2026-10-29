@@ -124,8 +124,9 @@ ol li::before { content: counter(krok) "."; position: absolute; left: 0; width: 
   const cena = q.has("c") ? Number(q.get("c")) : NaN;
   const app = /Instagram/.test(ua) ? "ig" : /musical_ly|TikTok|Bytedance/i.test(ua) ? "tt"
     : /Messenger|Orca-Android/.test(ua) ? "ms" : /FBAN|FBAV|FB_IAB/.test(ua) ? "fb" : "";
+  // částka jako kc: parametr c si Apps Script vyhrazuje a s hodnotou nad 1 požadavek odmítne (30. 10. 2026)
   const p = new URLSearchParams({ u: "nakup", z: znacka, o: odkud, a: app, m: /Mobi|Android|iPhone|iPad/.test(ua) ? "mobil" : "pc",
-    c: Number.isFinite(cena) ? cena : "" });
+    kc: Number.isFinite(cena) ? cena : "" });
   try { fetch(M.url + "?" + p, { credentials: "omit", keepalive: true, mode: "no-cors", cache: "no-store" }).catch(() => {}); } catch (e) {}
 })();
 </script>
