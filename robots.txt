@@ -1,12 +1,2 @@
-User-agent: facebookexternalhit
-User-agent: Facebot
-User-agent: WhatsApp
-User-agent: Twitterbot
-User-agent: TelegramBot
-User-agent: Slackbot-LinkExpanding
-User-agent: Discordbot
-User-agent: LinkedInBot
-Allow: /
-
 User-agent: *
-Disallow: /
+Disallow: /dekujeme.html
