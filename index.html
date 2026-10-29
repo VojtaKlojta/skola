@@ -372,8 +372,21 @@ const mereni = (() => {
     if (!zap || poslano[u]) return;
     poslano[u] = true;
     const p = new URLSearchParams(Object.assign({ u, z: znacka, o: odkud, a: app, m: /Mobi|Android|iPhone|iPad/.test(ua) ? "mobil" : "pc" }, navic));
-    // keepalive: nákup odchází těsně před přesměrováním na děkovací stránku
+    // keepalive: událost odejde, i když člověk stránku hned zavře
     try { fetch(M.url + "?" + p, { credentials: "omit", keepalive: true, mode: "no-cors", cache: "no-store" }).catch(() => {}); } catch (e) {}
+  };
+  // Nákup zapisuje děkovací stránka (30. 10. 2026: první skutečný nákup 28. 10. se odsud těsně před přesměrováním
+  // nezapsal). Sem se jen poskládá její adresa se značkou, doménou a částkou; jinou adresu nechá být.
+  const kDekujeme = (url, cena) => {
+    if (typeof url !== "string" || !url) url = "dekujeme.html";
+    try {
+      const u = new URL(url, location.href);
+      if (u.hostname !== location.hostname) return url;
+      if (znacka) u.searchParams.set("z", znacka);
+      if (odkud) u.searchParams.set("o", odkud);
+      if (Number.isFinite(cena)) u.searchParams.set("c", cena);
+      return u.href;
+    } catch (e) { return url; }
   };
   // návštěva jen při novém načtení (ne obnovení, ne krok zpět) a až když je stránka opravdu vidět
   const nav = performance.getEntriesByType("navigation")[0];
@@ -382,8 +395,7 @@ const mereni = (() => {
       document.removeEventListener("visibilitychange", vidim); jednou("navsteva"); };
     document.addEventListener("visibilitychange", vidim); vidim();
   }
-  return { platba: () => jednou("platba"), chyba: () => jednou("chyba"),
-    nakup: cena => jednou("nakup", { c: Number.isFinite(cena) ? cena : "" }) };
+  return { platba: () => jednou("platba"), chyba: () => jednou("chyba"), kDekujeme };
 })();
 
 // Počet lidí: nejdřív záloha z data.js, pak živá čísla z automatiky (bez cookies, bez osobních údajů).
@@ -593,7 +605,8 @@ $("#flixy-link").href = JOIN_URL;
 
 // Vložená platba z Flixy. Skript se načte až po kliknutí na přihlášení, takže kdo se nepřihlašuje, k Flixy ani
 // Stripe se nepřipojí. Měření (Meta, GA) je vypnuté: setConsent bez souhlasu. Po zaplacení přesměruje Flixy
-// na adresu nastavenou v administraci (děkovací stránka). Když se platba nenačte, zůstává odkaz na Flixy pod ní.
+// na adresu nastavenou v administraci (děkovací stránka), onSuccess k ní jen přidá značku a částku pro měření.
+// Když se platba nenačte, zůstává odkaz na Flixy pod ní.
 let checkoutMounted = false;
 function mountCheckout() {
   if (!CHECKOUT.enabled || checkoutMounted) return;
@@ -608,9 +621,12 @@ function mountCheckout() {
   const go = () => {
     try {
       window.FlixyCheckout.setConsent({ marketing: false, analytics: false });
-      // onConversion: Flixy ho zavolá po zaplacení, těsně před přesměrováním na děkovací stránku
+      // onConversion: Flixy ho zavolá po zaplacení, těsně před onSuccess; poznamená se jen částka. onSuccess dělá
+      // totéž co výchozí přesměrování (location.assign), jen na adresu se značkou a částkou.
+      let cena;
       window.FlixyCheckout.mount(target, { pageId: CHECKOUT.pageId, locale: "cs", onError: fail,
-        onConversion: d => { if (d && d.event === "purchase") mereni.nakup(Number(d.orderPrice)); } });
+        onConversion: d => { if (d && d.event === "purchase") cena = Number(d.orderPrice); },
+        onSuccess: url => location.assign(mereni.kDekujeme(url, cena)) });
     } catch (e) { fail(); }
   };
   if (window.FlixyCheckout) return go();

@@ -103,5 +103,31 @@ ol li::before { content: counter(krok) "."; position: absolute; left: 0; width: 
     <p class="t name">Vojta</p>
   </div>
 </main>
+<script src="data.js"></script>
+<script>
+// Měření nákupu (30. 10. 2026): sem přesměruje vložená platba po zaplacení, nákup se zapisuje tady. Z onConversion
+// na hlavní stránce těsně před přesměrováním se první skutečný nákup (28. 10.) nezapsal. Značku, doménu a částku
+// předá hlavní stránka v adrese (?z=&o=&c=); když v ní nejsou, vezme se značka z adresy, odkud člověk přišel.
+// Pravidla jako na hlavní stránce (MERENI v data.js): bez cookies a úložiště, jen při novém načtení (ne obnovení,
+// ne krok zpět), lokální náhled, jiná adresa a roboti nic neposílají. Na vlastní kontrolu otevři ?z=test.
+(() => {
+  const M = typeof MERENI === "object" ? MERENI : {}, ua = navigator.userAgent;
+  const nav = performance.getEntriesByType("navigation")[0];
+  if (!M.url || location.hostname !== M.host || navigator.webdriver || (nav && nav.type !== "navigate")
+    || /bot|crawl|spider|headless|lighthouse|preview/i.test(ua)) return;
+  const cista = s => String(s || "").toLowerCase().normalize("NFD").replace(/[^a-z0-9-]/g, "").slice(0, 16);
+  const q = new URLSearchParams(location.search);
+  let zdroj = q, odkud = String(q.get("o") || "").toLowerCase().replace(/[^a-z0-9.-]/g, "").slice(0, 80);
+  try { const r = new URL(document.referrer);
+    if (r.hostname !== location.hostname) odkud = odkud || r.hostname; else if (!q.has("z")) zdroj = r.searchParams; } catch (e) {}
+  const znacka = cista(zdroj.get("z")) || (zdroj.get("utm_source") ? cista("utm-" + zdroj.get("utm_source")) : "");
+  const cena = q.has("c") ? Number(q.get("c")) : NaN;
+  const app = /Instagram/.test(ua) ? "ig" : /musical_ly|TikTok|Bytedance/i.test(ua) ? "tt"
+    : /Messenger|Orca-Android/.test(ua) ? "ms" : /FBAN|FBAV|FB_IAB/.test(ua) ? "fb" : "";
+  const p = new URLSearchParams({ u: "nakup", z: znacka, o: odkud, a: app, m: /Mobi|Android|iPhone|iPad/.test(ua) ? "mobil" : "pc",
+    c: Number.isFinite(cena) ? cena : "" });
+  try { fetch(M.url + "?" + p, { credentials: "omit", keepalive: true, mode: "no-cors", cache: "no-store" }).catch(() => {}); } catch (e) {}
+})();
+</script>
 </body>
 </html>
