@@ -61,11 +61,12 @@ const LESSONS = {
   "p06": { date: "12. 10.", title: "Komplexní čísla", min: 65, topics: "Gaussova rovina a počítání s komplexními čísly" },
   "p07": { date: "15. 10.", title: "Komplexní posloupnosti, řady a funkce", min: 68, topics: "Řady a funkce v komplexních číslech" },
   "p08": { date: "22. 10.", title: "Cauchy-Riemannovy podmínky a grafy komplexních funkcí", min: 72, topics: "Kdy má komplexní funkce derivaci" },
+  "p09": { date: "29. 10.", title: "Komplexní zobrazení a integrace", min: 77, topics: "Zachování úhlů, křivkový integrál a Cauchyho vzorec" },
 };
 
 // Sekce podle probraných témat, od nejnovějšího po nejstarší.
 const SECTIONS = [
-  { title: "Komplexní analýza", note: "teď běží", lessons: ["p08", "p07", "p06"] },
+  { title: "Komplexní analýza", note: "teď běží", lessons: ["p09", "p08", "p07", "p06"] },
   { title: "Integrály v rovině", lessons: ["p05", "p04", "p02"] },
   { title: "Navázání na léto", lessons: ["p03", "p01"] },
   { title: "Variační počet", lessons: ["17", "16", "15", "14"] },
