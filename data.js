@@ -83,6 +83,7 @@ const SECTIONS = [
 // hraje stránka lokální media/ukazky/<file>.mp4 (třeba kandidát ke schválení). Náhled je vždy lokální .jpg.
 // Kde je file null, ukázka se teprve vybírá. Náhradníci a časy: UKAZKY.md.
 const PREVIEWS = {
+  "p09": { file: "p09-uhly-zustavaji", title: "Úhly, které funkce nezmění", len: "1:12", vimeo: "1241340304", h: "523435ba34" },
   "p07": { file: "p07-sinus-rovna-dvema", title: "Kdy se sinus rovná dvěma", len: "0:56", vimeo: "1238593754", h: "e116c1ecc8" },
   "p05": { file: "p05-sklad-s-drony", title: "Kam postavit sklad s drony", len: "1:05", vimeo: "1238593775", h: "11f722e1f3" },
   "17": { file: "17-retez-nevisi-do-paraboly", title: "Řetěz nevisí do paraboly", len: "1:16", vimeo: "1238593798", h: "bc58aa88d3" },
