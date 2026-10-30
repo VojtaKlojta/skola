@@ -86,6 +86,7 @@ const PREVIEWS = {
   "p09": { file: "p09-uhly-zustavaji", title: "Úhly, které funkce nezmění", len: "1:12", vimeo: "1241340304", h: "523435ba34" },
   "p07": { file: "p07-sinus-rovna-dvema", title: "Kdy se sinus rovná dvěma", len: "0:56", vimeo: "1238593754", h: "e116c1ecc8" },
   "p05": { file: "p05-sklad-s-drony", title: "Kam postavit sklad s drony", len: "1:05", vimeo: "1238593775", h: "11f722e1f3" },
+  "p03": { file: "p03-nejvetsi-obsah", title: "Největší obsah z jednoho provázku", len: "0:57", vimeo: "1241523412", h: "117af4ac34" },
   "17": { file: "17-retez-nevisi-do-paraboly", title: "Řetěz nevisí do paraboly", len: "1:16", vimeo: "1238593798", h: "bc58aa88d3" },
   "15": { file: "15-optimalni-skluzavka", title: "Hledáme optimální skluzavku", len: "1:18", vimeo: "1238593818", h: "873e46f9d3" },
   "13": { file: "13-pul-faktorial", title: "Kolika způsoby seřadíš půl věci?", len: "0:58", vimeo: "1238593833", h: "22bf6dc680" },
