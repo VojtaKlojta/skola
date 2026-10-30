@@ -461,7 +461,7 @@ const ICON_FULL = '<svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-
 const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
 
 // Lišta pracuje s „médiem“ m: lokální video (videoMedia) nebo Vimeo (vimeoMedia), obojí má stejné rozhraní:
-// paused, time, duration, muted, play(), pause(), seek(t), setMuted(b), fullscreen(), on(událost, fn).
+// paused, time, duration, muted, play(), pause(), seek(t), setMuted(b), fullscreen(), exitFullscreen(), on(událost, fn).
 function buildPlayer(box, m) {
   box.classList.add("vp-on");
   box.insertAdjacentHTML("beforeend", `<div class="vp">
@@ -523,6 +523,7 @@ function videoMedia(p) {
     get duration() { return v.duration || 0; }, get muted() { return v.muted; },
     play: () => v.play().catch(() => {}), pause: () => v.pause(), seek: t => { v.currentTime = t; },
     setMuted: b => { v.muted = b; }, fullscreen: () => v.webkitEnterFullscreen && v.webkitEnterFullscreen(),
+    exitFullscreen: () => v.webkitExitFullscreen && v.webkitExitFullscreen(),
     on: (name, fn) => v.addEventListener(ev[name] || name, fn) };
 }
 
@@ -549,6 +550,7 @@ function vimeoMedia(p) {
     setMuted: b => { if (pl) (b ? pl.setMuted(true) : pl.setMuted(false).then(() => pl.setVolume(1)))
       .then(() => { st.muted = b; fire("muted"); }).catch(() => {}); },
     fullscreen: () => { if (pl) pl.requestFullscreen().catch(() => {}); },
+    exitFullscreen: () => { if (pl) pl.exitFullscreen().catch(() => {}); },
     on: (n, fn) => (hs[n] = hs[n] || []).push(fn) };
   loadVimeo().then(V => {
     pl = new V.Player(f);
@@ -575,6 +577,13 @@ function vimeoMedia(p) {
 
 const players = new Map();
 const pauseAll = except => players.forEach((m, k) => { if (k !== except && !m.paused) m.pause(); });
+// Nabídka po ukázce i okno s platbou leží mimo prvek na celé obrazovce (na iPhonu je přes celou obrazovku jen
+// přehrávač Vimea, na počítači rámeček ukázky a okno platby je jinde), proto se celá obrazovka nejdřív opustí
+// (Vojta 30. 10.: po dohrání na celé obrazovce se neukázala možnost platby).
+const leaveFullscreen = () => {
+  if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+  players.forEach(m => m.exitFullscreen && m.exitFullscreen());
+};
 
 function play(n) {
   const box = document.querySelector(`.media[data-n="${n}"]`);
@@ -586,7 +595,7 @@ function play(n) {
     if (!p.vimeo && !p.file) return missing("Ukázka se ještě vybírá");
     m = p.vimeo ? vimeoMedia(p) : videoMedia(p);
     players.set(n, m);
-    m.on("ended", () => { box.classList.remove("vp-show"); box.querySelector(".end").classList.add("on"); });
+    m.on("ended", () => { leaveFullscreen(); box.classList.remove("vp-show"); box.querySelector(".end").classList.add("on"); });
     m.on("error", () => missing("Ukázka se nenačetla, zkus to prosím znovu"));
     if (p.vimeo) {
       // náhled zůstane pod přehrávačem, dokud Vimeo nezačne hrát; kliknutí chytá vrstva .vp-hit
@@ -640,7 +649,7 @@ document.addEventListener("click", e => {
   if (!t) { if (e.target === modal) modal.classList.remove("on"); return; }
   if (t.dataset.play) play(t.dataset.play);
   else if (t.dataset.replay) play(t.dataset.replay);
-  else if ("join" in t.dataset) { pauseAll(); modal.classList.add("on"); mountCheckout(); mereni.platba(); }
+  else if ("join" in t.dataset) { pauseAll(); leaveFullscreen(); modal.classList.add("on"); mountCheckout(); mereni.platba(); }
   else if ("close" in t.dataset) modal.classList.remove("on");
   else if (t.dataset.filter) {
     const free = t.dataset.filter === "free";
