@@ -62,11 +62,12 @@ const LESSONS = {
   "p07": { date: "15. 10.", title: "Komplexní posloupnosti, řady a funkce", min: 68, topics: "Řady a funkce v komplexních číslech" },
   "p08": { date: "22. 10.", title: "Cauchy-Riemannovy podmínky a grafy komplexních funkcí", min: 72, topics: "Kdy má komplexní funkce derivaci" },
   "p09": { date: "29. 10.", title: "Komplexní zobrazení a integrace", min: 77, topics: "Zachování úhlů, křivkový integrál a Cauchyho vzorec" },
+  "p10": { date: "5. 11.",  title: "Komplexní integrály", min: 86, topics: "Cauchyho vzorec a reálné integrály přes konturu" },
 };
 
 // Sekce podle probraných témat, od nejnovějšího po nejstarší.
 const SECTIONS = [
-  { title: "Komplexní analýza", note: "teď běží", lessons: ["p09", "p08", "p07", "p06"] },
+  { title: "Komplexní analýza", note: "teď běží", lessons: ["p10", "p09", "p08", "p07", "p06"] },
   { title: "Integrály v rovině", lessons: ["p05", "p04", "p02"] },
   { title: "Navázání na léto", lessons: ["p03", "p01"] },
   { title: "Variační počet", lessons: ["17", "16", "15", "14"] },
@@ -83,6 +84,7 @@ const SECTIONS = [
 // hraje stránka lokální media/ukazky/<file>.mp4 (třeba kandidát ke schválení). Náhled je vždy lokální .jpg.
 // Kde je file null, ukázka se teprve vybírá. Náhradníci a časy: UKAZKY.md.
 const PREVIEWS = {
+  "p10": { file: "p10-hranice-urci-vse", title: "Hranice určí celou funkci", len: "0:56", vimeo: "1243963385", h: "89a8552061" },
   "p09": { file: "p09-uhly-zustavaji", title: "Úhly, které funkce nezmění", len: "1:12", vimeo: "1241340304", h: "523435ba34" },
   "p07": { file: "p07-sinus-rovna-dvema", title: "Kdy se sinus rovná dvěma", len: "0:56", vimeo: "1238593754", h: "e116c1ecc8" },
   "p05": { file: "p05-sklad-s-drony", title: "Kam postavit sklad s drony", len: "1:05", vimeo: "1238593775", h: "11f722e1f3" },
